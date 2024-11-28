@@ -36,5 +36,8 @@ void send_char(char c, int led, int Ts, int guard_each, int pkg_size, int header
   }
   // Turn off LED
   digitalWrite(led, LOW);
+  // Guard
+  Serial.print(" Guard ");
+  delay(Ts);
   Serial.println();
 }
