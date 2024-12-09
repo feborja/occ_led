@@ -49,3 +49,12 @@ void turn_custom(int R_PIN, int G_PIN, int B_PIN, int R, int G, int B) {
     analogWrite(G_PIN, G);
     analogWrite(B_PIN, B);
 }
+
+// Signal map definition
+std::map<int, void(*)(int, int, int)> SIGNAL_MAP = {
+    {1, turn_red},
+    {2, turn_green},
+    {3, turn_blue},
+    {-1, turn_off},
+    {0, turn_white},
+};
