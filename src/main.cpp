@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include "csk.hpp"
+// #include "ook.hpp"
+
 
 
 // run if ook.hpp is included
@@ -47,10 +49,11 @@
 
   void loop() {
     // Loop between red, green, blue, white
-    for (int i = 1; i < 5; i++) {
+    for (int i = 1; i < 4; i++) {
       SIGNAL_MAP[i](R_PIN, G_PIN, B_PIN);
       delay(Ts);
     }
+    delay(1);
   }
 
 #endif

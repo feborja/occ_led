@@ -2,23 +2,23 @@
 
 void turn_red(int R_PIN, int G_PIN, int B_PIN) {
     Serial.println("Turning red");
-    digitalWrite(R_PIN, HIGH);
-    digitalWrite(G_PIN, LOW);
-    digitalWrite(B_PIN, LOW);
+    analogWrite(R_PIN, HIGH);
+    analogWrite(G_PIN, LOW);
+    analogWrite(B_PIN, LOW);
 }
 
 void turn_green(int R_PIN, int G_PIN, int B_PIN) {
     Serial.println("Turning green");
-    digitalWrite(R_PIN, LOW);
-    digitalWrite(G_PIN, HIGH);
-    digitalWrite(B_PIN, LOW);
+    analogWrite(R_PIN, LOW);
+    analogWrite(G_PIN, HIGH);
+    analogWrite(B_PIN, LOW);
 }
 
 void turn_blue(int R_PIN, int G_PIN, int B_PIN) {
     Serial.println("Turning blue");
-    digitalWrite(R_PIN, LOW);
-    digitalWrite(G_PIN, LOW);
-    digitalWrite(B_PIN, HIGH);
+    analogWrite(R_PIN, LOW);
+    analogWrite(G_PIN, LOW);
+    analogWrite(B_PIN, HIGH);
 }
 
 void turn_off(int R_PIN, int G_PIN, int B_PIN) {
@@ -30,9 +30,9 @@ void turn_off(int R_PIN, int G_PIN, int B_PIN) {
 
 void turn_white(int R_PIN, int G_PIN, int B_PIN) {
     Serial.println("Turning white");
-    digitalWrite(R_PIN, HIGH);
-    digitalWrite(G_PIN, HIGH);
-    digitalWrite(B_PIN, HIGH);
+    analogWrite(R_PIN, HIGH);
+    analogWrite(G_PIN, HIGH);
+    analogWrite(B_PIN, HIGH);
 }
 std::vector<int> hex_to_rgb(String hex) {
     std::vector<int> rgb;
