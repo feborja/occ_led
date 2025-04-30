@@ -1,60 +1,114 @@
 #include "csk.hpp"
 
-void turn_red(int R_PIN, int G_PIN, int B_PIN) {
-    Serial.println("Turning red");
-    analogWrite(R_PIN, HIGH);
-    analogWrite(G_PIN, LOW);
-    analogWrite(B_PIN, LOW);
+/*
+Color conversion to writeable RGB format
+*/
+
+float clamp(float v, float minVal, float maxVal) {
+    return std::max(minVal, std::min(maxVal, v));
 }
 
-void turn_green(int R_PIN, int G_PIN, int B_PIN) {
-    Serial.println("Turning green");
-    analogWrite(R_PIN, LOW);
-    analogWrite(G_PIN, HIGH);
-    analogWrite(B_PIN, LOW);
-}
-
-void turn_blue(int R_PIN, int G_PIN, int B_PIN) {
-    Serial.println("Turning blue");
-    analogWrite(R_PIN, LOW);
-    analogWrite(G_PIN, LOW);
-    analogWrite(B_PIN, HIGH);
-}
-
-void turn_off(int R_PIN, int G_PIN, int B_PIN) {
-    Serial.println("Turning off");
-    digitalWrite(R_PIN, LOW);
-    digitalWrite(G_PIN, LOW);
-    digitalWrite(B_PIN, LOW);
-}
-
-void turn_white(int R_PIN, int G_PIN, int B_PIN) {
-    Serial.println("Turning white");
-    analogWrite(R_PIN, HIGH);
-    analogWrite(G_PIN, HIGH);
-    analogWrite(B_PIN, HIGH);
-}
-std::vector<int> hex_to_rgb(String hex) {
-    std::vector<int> rgb;
-    for (int i = 0; i < 3; i++) {
-        String hex_val = hex.substring(i * 2, i * 2 + 2);
-        rgb.push_back(strtol(hex_val.c_str(), NULL, 16));
+float fastGammaCorrect(float u) {
+    if (u <= 0.0031308f) {
+        return 12.92f * u;
+    } else {
+        return 1.055f * powf(u, 1.0f/2.4f) - 0.055f;
     }
-    return rgb;
 }
 
-void turn_custom(int R_PIN, int G_PIN, int B_PIN, int R, int G, int B) {
-    Serial.println("Turning custom");
-    analogWrite(R_PIN, R);
-    analogWrite(G_PIN, G);
-    analogWrite(B_PIN, B);
+void XYZToRGB(const float xyz[3], float rgb[3]) {
+    // Using sRGB conversion matrix (IEC 61966-2-1)
+    rgb[0] =  3.2406f * xyz[0] - 1.5372f * xyz[1] - 0.4986f * xyz[2];
+    rgb[1] = -0.9689f * xyz[0] + 1.8758f * xyz[1] + 0.0415f * xyz[2];
+    rgb[2] =  0.0557f * xyz[0] - 0.2040f * xyz[1] + 1.0570f * xyz[2];
+
+    // Clamp before gamma correction
+    rgb[0] = clamp(rgb[0]);
+    rgb[1] = clamp(rgb[1]);
+    rgb[2] = clamp(rgb[2]);
+
+    // Gamma correction
+    rgb[0] = fastGammaCorrect(rgb[0]);
+    rgb[1] = fastGammaCorrect(rgb[1]);
+    rgb[2] = fastGammaCorrect(rgb[2]);
 }
 
-// Signal map definition
-std::map<int, void(*)(int, int, int)> SIGNAL_MAP = {
-    {1, turn_red},
-    {2, turn_green},
-    {3, turn_blue},
-    {-1, turn_off},
-    {0, turn_white},
-};
+int convertCoords(const float xy[2], float Y) {
+    int RGB[3] = {0, 0, 0};
+    float x = xy[0];
+    float y = xy[1];
+
+    if (y <= 0.001f) { 
+        // Invalid data, return black
+        return 0;
+    }
+
+    // Calculate XYZ from xyY
+    float X = (x / y) * Y;
+    float Z = ((1.0f - x - y) / y) * Y;
+
+    float xyz[3] = {X, Y, Z};
+    float rgb[3];
+
+    XYZToRGB(xyz, rgb);
+
+    // Final clamp and quantization
+    RGB[0] = int(clamp(rgb[0]) * 255.0f + 0.5f);
+    RGB[1] = int(clamp(rgb[1]) * 255.0f + 0.5f);
+    RGB[2] = int(clamp(rgb[2]) * 255.0f + 0.5f);
+
+    // Pack RGB into a single integer (0xRRGGBB format)
+    return (RGB[0] << 16) | (RGB[1] << 8) | RGB[2];
+}
+
+/*
+Data sending
+*/
+
+int* char_to_bits(char c) {
+    static int bits[2];
+    bits[0] = (c >> 1) & 1; // First bit
+    bits[1] = c & 1;       // Second bit
+    return bits;
+}
+
+void turn_off(int led_pins[3]) {
+    for (int i = 0; i < 3; i++) {
+        analogWrite(led_pins[i], 0);
+    }
+}   
+
+void send_header(int led_pins[3], int sleep_time, int rgb[4][3]) {
+    // The headers is a ESC in ascii
+    // ESC = 0x1B   // 00011011
+    int* bits = char_to_bits(0x1B);
+    // Send all bits
+    for (int i = 0; i < 4; i++) {
+        analogWrite(led_pins[0], rgb[bits[i]][0]);
+        analogWrite(led_pins[1], rgb[bits[i]][1]);
+        analogWrite(led_pins[2], rgb[bits[i]][2]);
+        delay(sleep_time);
+    }
+    // Turn off LED
+    turn_off(led_pins);
+    // Guard
+    delay(sleep_time);
+}
+
+void send_char(char c, int led_pins[3], int sleep_time, int rgb[4][3]) {
+    // Send the header
+    send_header(led_pins, sleep_time, rgb);
+    // Get the bits of the char
+    int* bits = char_to_bits(c);
+    // Send all bits
+    for (int i = 0; i < 2; i++) {
+        analogWrite(led_pins[0], rgb[bits[i]][0]);
+        analogWrite(led_pins[1], rgb[bits[i]][1]);
+        analogWrite(led_pins[2], rgb[bits[i]][2]);
+        delay(sleep_time);
+    }
+    // Turn off LED
+    turn_off(led_pins);
+    // Guard
+    delay(sleep_time);
+}

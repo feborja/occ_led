@@ -1,99 +1,46 @@
 #include <Arduino.h>
-#include <vector>
-#include <map>
+#include <cstdio>
+#include <cmath>
+#include <algorithm>
 
-#ifndef CSK
-#define CSK
+// Constants
 
+// CIE 1931 color space coordinates for the four colors used in QCSK
+const float QCSK[4][2] = {
+    {0.169f, 0.007f},  // Should be blue S0 00
+    {0.011f, 0.460f},  // Should be cyan S1 01
+    {0.734f, 0.265f},  // Should be red S2 10
+    {0.402f, 0.597f}   // Should be yellow S3 11
+};
 
-// Function declarations
-/*
-# turn_red
-@brief Turns the LED red
-
-@param int R_PIN: the pin of the red LED
-@param int G_PIN: the pin of the green LED
-@param int B_PIN: the pin of the blue LED
-
-@return void
-*/
-void turn_red(int R_PIN, int G_PIN, int B_PIN);
+const float Y = 1.0f; // Luminance value for conversion
 
 /*
-# turn_green
-@brief Turns the LED green
-
-@param int R_PIN: the pin of the red LED
-@param int G_PIN: the pin of the green LED
-@param int B_PIN: the pin of the blue LED
-
-@return void
+Color conversion to writeable RGB format
 */
-void turn_green(int R_PIN, int G_PIN, int B_PIN);
+
+float clamp(float v, float minVal = 0.0f, float maxVal = 1.0f);
+
+float fastGammaCorrect(float u);
+
+void XYZToRGB(const float xyz[3], float rgb[3]);
+
+int convertCoords(const float xy[2], float Y);
 
 /*
-# turn_blue
-
-@brief Turns the LED blue
-
-@param int R_PIN: the pin of the red LED
-@param int G_PIN: the pin of the green LED
-@param int B_PIN: the pin of the blue LED
-
-@return void
+Data sending
 */
-void turn_blue(int R_PIN, int G_PIN, int B_PIN);
 
-/*
-# turn_off
-@brief Turns the LED off
+// Transform a char to a int list of 2 bits
+int* char_to_bits(char c);
 
-@param int R_PIN: the pin of the red LED
-@param int G_PIN: the pin of the green LED
-@param int B_PIN: the pin of the blue LED
+// Turn off the LEDs
+void turn_off(int led_pins[3]);
 
-@return void
-*/
-void turn_off(int R_PIN, int G_PIN, int B_PIN);
+// Send the header of the message
+// The header is all the colors in the QCSK format (an ESC in ascii)
+void send_header(int led_pins[3], int sleep_time, int rgb[4][3]);
 
-/*
-# turn_white
-@brief Turns the LED white
-
-@param int R_PIN: the pin of the red LED
-@param int G_PIN: the pin of the green LED
-@param int B_PIN: the pin of the blue LED
-
-@return void
-*/
-void turn_white(int R_PIN, int G_PIN, int B_PIN);
-
-/*
-# hex_to_rgb
-@brief Converts a hex string to an RGB vector
-
-@param String hex: the hex string to convert
-
-@return std::vector<int>: the RGB vector
-*/
-std::vector<int> hex_to_rgb(String hex);
-
-/*
-# turn_custom
-@brief Turns the LED to a custom color
-
-@param int R_PIN: the pin of the red LED
-@param int G_PIN: the pin of the green LED
-@param int B_PIN: the pin of the blue LED
-@param int R: the red value
-@param int G: the green value
-@param int B: the blue value
-
-@return void
-*/
-void turn_custom(int R_PIN, int G_PIN, int B_PIN, int R, int G, int B);
-
-// Signal map
-extern std::map<int, void(*)(int, int, int)> SIGNAL_MAP;
-
-#endif
+// Send a char to the LEDs
+// The char is sent in the QCSK format
+void send_char(char c, int led_pins[3], int sleep_time, int rgb[4][3]);
