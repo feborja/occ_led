@@ -3,6 +3,8 @@
 #include <cmath>
 #include <algorithm>
 
+#ifndef CSK
+#define CSK
 // Constants
 
 // CIE 1931 color space coordinates for the four colors used in QCSK
@@ -35,12 +37,14 @@ Data sending
 int* char_to_bits(char c);
 
 // Turn off the LEDs
-void turn_off(int led_pins[3]);
+void turn_off(const int led_pins[3]);
 
 // Send the header of the message
 // The header is all the colors in the QCSK format (an ESC in ascii)
-void send_header(int led_pins[3], int sleep_time, int rgb[4][3]);
+void send_header(const int led_pins[3], int sleep_time, int rgb[4][3]);
 
 // Send a char to the LEDs
 // The char is sent in the QCSK format
-void send_char(char c, int led_pins[3], int sleep_time, int rgb[4][3]);
+void send_char(char c, const int led_pins[3], int sleep_time, int rgb[4][3]);
+
+#endif

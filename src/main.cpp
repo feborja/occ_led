@@ -35,25 +35,41 @@
 // run if csk.hpp is included
 #ifdef CSK
   // Constants
-  const int R_PIN = 14, G_PIN = 12, B_PIN = 13;
-  const int R = 255, G = 255, B = 255;
+  const int RGBPINS[3] ={14, 12, 13};
+  // const int R_PIN = 14, G_PIN = 12, B_PIN = 13;
   const int Ts = 1000;
+  const String msg = "Esto es una prueba";
+
+  // Global variable to store RGB values
+  int RGB[4][3];
 
   void setup() {
-    // Run once
-    pinMode(R_PIN, OUTPUT);
-    pinMode(G_PIN, OUTPUT);
-    pinMode(B_PIN, OUTPUT);
+    // Setup pins and turn off LEDs
+    for (int i =0; i < 3; i++) {
+      pinMode(RGBPINS[i], OUTPUT);
+      digitalWrite(RGBPINS[i], LOW);
+    }
+    // Calculate colors 
+    for (int i = 0; i < 4; i++) {
+      int color = CSK::convertCoords(CSK::QCSK[i], CSK::Y);
+      RGB[i][0] = (color >> 16) & 0xFF; // Red
+      RGB[i][1] = (color >> 8) & 0xFF;  // Green
+      RGB[i][2] = color & 0xFF;         // Blue
+    }
+
+    // Serial setup
     Serial.begin(9600);
   }
 
   void loop() {
-    // Loop between red, green, blue, white
-    for (int i = 1; i < 4; i++) {
-      SIGNAL_MAP[i](R_PIN, G_PIN, B_PIN);
-      delay(Ts);
+    // Run forever
+    Serial.println("Sending message: " + msg);
+    for (int i = 0; i < msg.length(); i++) {
+      CSK::send_char(msg[i], RGBPINS, Ts, RGB);
     }
-    delay(1);
+    // Turn off LEDs
+    CSK::turn_off(RGBPINS);
+    delay(1000); // Wait for a second before sending the next character
   }
 
 #endif
