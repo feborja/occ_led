@@ -93,7 +93,7 @@ void send_header(const int led_pins[3], int sleep_time, int rgb[4][3]) {
     //
     Serial.print("Header \n");
     // The headers is a ESC in ascii
-    // ESC = 0x1B   // 00011011
+    // ESC = 0x1B   // 00 01 10 11
     int* bits = char_to_bits(0x1B);
     // Send all bits
     for (int i = 0; i < 4; i++) {

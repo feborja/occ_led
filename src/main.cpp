@@ -36,14 +36,18 @@
 #ifdef CSK
   // Constants
   const int RGBPINS[3] ={14, 12, 13};
-  // const int R_PIN = 14, G_PIN = 12, B_PIN = 13;
-  const int Ts = 1000;
-  const String msg = "Esto es una prueba";
+  const int BUTTON = 34;
+  const int Ts = 100;
+  const String msg = "Hola mundo";
 
   // Global variable to store RGB values
   int RGB[4][3];
+  // Button variable
+  int buttonState = 0; 
 
   void setup() {
+    // Setup button
+    pinMode(BUTTON, INPUT);
     // Setup pins and turn off LEDs
     for (int i =0; i < 3; i++) {
       pinMode(RGBPINS[i], OUTPUT);
@@ -59,17 +63,25 @@
 
     // Serial setup
     Serial.begin(9600);
+
+    Serial.print("Colors: ");
+    for (int i = 0; i < 4; i++) {
+      Serial.println("Color " + String(i) + ": " + String(RGB[i][0]) + " " + String(RGB[i][1]) + " " + String(RGB[i][2]));
+    }
   }
 
   void loop() {
-    // Run forever
-    Serial.println("Sending message: " + msg);
-    for (int i = 0; i < msg.length(); i++) {
-      CSK::send_char(msg[i], RGBPINS, Ts, RGB);
+    // Run if button is pressed
+    buttonState = digitalRead(BUTTON);
+    if (buttonState == HIGH) {
+      Serial.println("Sending message: " + msg);
+      for (int i = 0; i < msg.length(); i++) {
+        CSK::send_char(msg[i], RGBPINS, Ts, RGB);
+      }
+      // Turn off LEDs
+      CSK::turn_off(RGBPINS);
+      delay(1000); // Wait for a second before sending the next character
     }
-    // Turn off LEDs
-    CSK::turn_off(RGBPINS);
-    delay(1000); // Wait for a second before sending the next character
   }
 
 #endif

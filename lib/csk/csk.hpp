@@ -15,7 +15,7 @@ const float QCSK[4][2] = {
     {0.402f, 0.597f}   // Should be yellow S3 11
 };
 
-const float Y = 1.0f; // Luminance value for conversion
+const float Y = 2.0f; // Luminance value for conversion
 
 /*
 Color conversion to writeable RGB format
