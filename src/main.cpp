@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <params.hpp>
 #include "csk.hpp"
 // #include "ook.hpp"
 
@@ -7,28 +8,36 @@
 // run if ook.hpp is included
 #ifdef OOK
   // Constants
-  const int LED = 32, Ts = 1000, header_size = 5;
+  const int LED = 14, Ts = 100, header_size = 5;
   const int pkg_size = 8, guard_each = 4;
-  const String msg = "UU";
-
-  // CSK case
-  const int R_PIN = 13, G_PIN = 12, B_PIN = 14;
-
+  const int BUTTON = 34;
+  // Button variable and line to read
+  int buttonState = 0, line = 0; 
 
   void setup() {
     // Run once
+    pinMode(BUTTON, INPUT);
     pinMode(LED, OUTPUT);
     Serial.begin(9600);
   }
 
   void loop() {
-    // Run forever
-    Serial.println("Sending message: " + msg);
-    for (int i = 0; i < msg.length(); i++) {
-      Serial.println("Sending character: " + String(msg[i]));
-      OOK::send_char(msg[i], LED, Ts, guard_each, pkg_size, header_size); 
+    // Reset count
+    if (line >= 21) {
+      line *=0;
     }
-    digitalWrite(LED, LOW);
+    // Run if button is pressed
+    buttonState = digitalRead(BUTTON);
+    if (buttonState == HIGH) {
+      delay(5000);
+      Serial.println("Sending message: " + message[line]);
+      for (int i = 0; i < message[line].length(); i++) {
+        Serial.println("Sending character: " + String(message[line][i]));
+        OOK::send_char(message[line][i], LED, Ts, guard_each, pkg_size, header_size); 
+      }
+      digitalWrite(LED, LOW);
+      line++;
+    }
   }
 
 #endif
@@ -38,12 +47,12 @@
   const int RGBPINS[3] ={14, 12, 13};
   const int BUTTON = 34;
   const int Ts = 100;
-  const String msg = "Hola mundo";
 
   // Global variable to store RGB values
   int RGB[4][3];
   // Button variable
   int buttonState = 0; 
+  int line = 0;
 
   void setup() {
     // Setup button
@@ -74,13 +83,14 @@
     // Run if button is pressed
     buttonState = digitalRead(BUTTON);
     if (buttonState == HIGH) {
-      Serial.println("Sending message: " + msg);
-      for (int i = 0; i < msg.length(); i++) {
-        CSK::send_char(msg[i], RGBPINS, Ts, RGB);
+      delay(5000);
+      Serial.println("Sending message " + String(line) + " : " + message[line]);
+      for (int i = 0; i < message[line].length(); i++) {
+        CSK::send_char(message[line][i], RGBPINS, Ts, RGB);
       }
       // Turn off LEDs
       CSK::turn_off(RGBPINS);
-      delay(1000); // Wait for a second before sending the next character
+      line++;
     }
   }
 
