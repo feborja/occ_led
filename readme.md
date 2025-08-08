@@ -4,8 +4,8 @@ This repository contains code and documentation for controlling LED devices usin
 
 ## Features
 
-- Intuitive interface for LED control
-- Support for various LED patterns and effects
+- Simple and fast code for a single-LED control
+- Works for OOK and CSK via a RGB LED (3-pin)
 - Modular and extensible design
 
 ## Getting Started
