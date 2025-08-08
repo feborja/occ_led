@@ -31,7 +31,6 @@ void send_bit(bool bit, int pos, int led, int Ts, int guard_each) {
 void send_char(char c, int led, int Ts, int guard_each, int pkg_size, int header_size) {
   send_header(led, Ts, header_size);
   for (int i = pkg_size - 1; i >= 0; i--) {
-    // Serial.print(String((c >> i) & 1));
     send_bit((c >> i) & 1, i, led, Ts, guard_each);
   }
   // Turn off LED

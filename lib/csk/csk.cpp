@@ -66,33 +66,25 @@ Data sending
 */
 
 int* char_to_bits(char c) {
-    Serial.print("Converting char to bits: ");
-    Serial.println();
     static int bits[4];
     // Convert char to bits
     bits[0] = (c >> 6) & 3; // First 2 bits
-    Serial.print(bits[0]);
     bits[1] = (c >> 4) & 3; // Second 2 bits
-    Serial.print(bits[1]);
     bits[2] = (c >> 2) & 3; // Third 2 bits
-    Serial.print(bits[2]);
     bits[3] = (c >> 0) & 3; // Fourth 2 bits
-    Serial.print(bits[3]);
-    Serial.println();
-    
+
     return bits;
 }
 
-void turn_off(const int led_pins[3]) {
-    for (int i = 0; i < 3; i++) {
-        analogWrite(led_pins[i], 0);
-    }
-}   
+void turn_off(const int led_pins[3], int rgb[4][3]) {
+    // Turn off state (blue)
+    analogWrite(led_pins[0], rgb[0][0]);
+    analogWrite(led_pins[1], rgb[0][1]);
+    analogWrite(led_pins[2], rgb[0][2]);
+}
 
 void send_header(const int led_pins[3], int sleep_time, int rgb[4][3]) {
-    //
-    Serial.print("Header \n");
-    // The headers is a ESC in ascii
+    // The header is a ESC in ascii
     // ESC = 0x1B   // 00 01 10 11
     int* bits = char_to_bits(0x1B);
     // Send all bits
@@ -102,8 +94,8 @@ void send_header(const int led_pins[3], int sleep_time, int rgb[4][3]) {
         analogWrite(led_pins[2], rgb[bits[i]][2]);
         delay(sleep_time);
     }
-    // Turn off LED
-    turn_off(led_pins);
+    // Turn off LED (zero state -> blue)
+    turn_off(led_pins, rgb);
     // Guard
     delay(sleep_time);
 }
@@ -112,31 +104,17 @@ void send_char(char c, const int led_pins[3], int sleep_time, int rgb[4][3]) {
     // Send the header
     send_header(led_pins, sleep_time, rgb);
     // Get the bits of the char
-    Serial.print("Sending char: ");
-    Serial.print(c);
-    Serial.println();
     int* bits = char_to_bits(c);
     
     // Send all bits
     for (int i = 0; i < 4; i++) {
-        Serial.print("Sending symbol No. ");
-        Serial.print(i);
-        Serial.print(" with value ");
-        Serial.print(bits[i]);
-        Serial.print(" in color ");
-        Serial.print(rgb[bits[i]][0]);
-        Serial.print(" ");
-        Serial.print(rgb[bits[i]][1]);
-        Serial.print(" ");
-        Serial.print(rgb[bits[i]][2]);
-        Serial.println();
         analogWrite(led_pins[0], rgb[bits[i]][0]);
         analogWrite(led_pins[1], rgb[bits[i]][1]);
         analogWrite(led_pins[2], rgb[bits[i]][2]);
         delay(sleep_time);
     }
     // Turn off LED
-    turn_off(led_pins);
+    turn_off(led_pins, rgb);
     // Guard
     delay(sleep_time);
 }

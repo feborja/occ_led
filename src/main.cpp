@@ -47,6 +47,7 @@
   const int RGBPINS[3] ={14, 12, 13};
   const int BUTTON = 34;
   const int Ts = 100;
+  const int redo[2] = {12, 16};
 
   // Global variable to store RGB values
   int RGB[4][3];
@@ -77,6 +78,11 @@
     for (int i = 0; i < 4; i++) {
       Serial.println("Color " + String(i) + ": " + String(RGB[i][0]) + " " + String(RGB[i][1]) + " " + String(RGB[i][2]));
     }
+
+    // Our default zero is keeping the LED on blue
+    analogWrite(RGBPINS[0], RGB[0][0]);
+    analogWrite(RGBPINS[1], RGB[0][1]);
+    analogWrite(RGBPINS[2], RGB[0][2]);
   }
 
   void loop() {
@@ -84,12 +90,13 @@
     buttonState = digitalRead(BUTTON);
     if (buttonState == HIGH) {
       delay(5000);
-      Serial.println("Sending message " + String(line) + " : " + message[line]);
-      for (int i = 0; i < message[line].length(); i++) {
-        CSK::send_char(message[line][i], RGBPINS, Ts, RGB);
+      Serial.println("Sending message " + String(redo[line]) + " : " + message[redo[line]]);
+      for (int i = 0; i < message[redo[line]].length(); i++) {
+      // for (int i = 0; i < 5; i++) {
+        CSK::send_char(message[redo[line]][i], RGBPINS, Ts, RGB);
       }
       // Turn off LEDs
-      CSK::turn_off(RGBPINS);
+      CSK::turn_off(RGBPINS, RGB);
       line++;
     }
   }
